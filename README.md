@@ -33,3 +33,22 @@ python -m pytest tests/test_seed.py -v
 # 7. Clear Seeded data (Optional)
 python clear_seed.py
 
+# ############ DOCKER Optional ########################
+# This is un-verified
+
+
+# 8. Docker Setup
+docker build --target test-runner -t bookmarks-test-suite .
+
+# 9. Up the Environment Locally
+docker compose up --build -d
+
+# 9.1 URL to test swagger UI
+http://localhost:9500/api/docs
+
+# 10. Check logs
+docker compose logs -f
+
+# 11. Teardown the Environment Locally
+docker compose down
+# ############ DOCKER Optional ########################

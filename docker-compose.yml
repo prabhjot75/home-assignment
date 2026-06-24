@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  web-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production  # Directs compose to execute right down to the production image stage
+    container_name: bookmarks_api_service
+    ports:
+      - "9500:9500"
+    volumes:
+      # Mounts a named persistent volume asset specifically to protect database state across reboots
+      - db_data:/app
+    environment:
+      - SECRET_KEY=BUSINESS_AI_SECRET_KEY
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+    restart: always
+
+volumes:
+  db_data:
