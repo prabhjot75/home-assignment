@@ -9,6 +9,8 @@
 
 # a. Installing pip. This is (optional) - (I had to do it to fix my existing environment).
 python -m pip install --upgrade pip setuptools wheel
+python -m pip install --upgrade sqlalchemy
+delete all .pytest_cache folders, if the code is modified after execution and test is runned    
 
 # 1. Install dependencies
 pip install -r requirements.txt
@@ -17,6 +19,9 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 127.0.0.1  --port 9500
 
 # 3. Testing
-pytest -v
+python -m pytest -v or pytest -v
+
+# 4. Testing the swagger UI
+python run.py --> this will start the server on http://localhost:9500/api/docs
 
 

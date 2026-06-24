@@ -2,11 +2,11 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field
 
 class UserBase(BaseModel):
-    username: str = Field(..., max_length=80, examples=["prabhjots"])
-    email: EmailStr = Field(..., examples=["prabhjot.singh@businessai.com"])
+    username: str = Field(..., min_length=1, max_length=80)
+    email: EmailStr
 
 class UserRegister(UserBase):
-    password: str = Field(..., min_length=8, examples=["secure_bus_ai123"])
+    password: str = Field(..., min_length=6, max_length=100)
 
 class UserResponse(BaseModel):
     id: int
@@ -19,4 +19,4 @@ class UserResponse(BaseModel):
 
 class TokenResponse(BaseModel):
     user: UserResponse
-    token: str
+    token: str  # <--- Must be exactly 'token' to match user['token'] in tests

@@ -10,8 +10,8 @@ class TagResponse(BaseModel):
 
 class BookmarkBase(BaseModel):
     url: str = Field(..., description="Valid bookmark destination URL")
-    title: str = Field(..., max_length=200)
-    description: Optional[str] = Field(None, max_length=500)
+    title: str = Field(..., min_length=1, max_length=200, description="Title is required and must be under 200 characters.")
+    description: Optional[str] = Field(None, max_length=500, description="Description must be under 500 characters.")
 
     @field_validator('url')
     @classmethod
