@@ -95,3 +95,49 @@ class BookmarkService:
             "top_tags": [dict(row) for row in top_tags_res],
             "bookmarks_per_month": [dict(row) for row in monthly_res]
         }
+    @staticmethod
+    def get_raw_stats(db: Session, user_id: int) -> dict:
+        """
+        Executes raw, optimized SQL queries to compile statistical aggregates
+        scoped strictly to the authenticated user.
+        """
+        # Query 1: Global Counts for User
+        counts_query = text("""
+            SELECT 
+                (SELECT COUNT(*) FROM bookmarks WHERE user_id = :user_id) as total_bookmarks,
+                (SELECT COUNT(DISTINCT tag_id) FROM bookmark_tags bt 
+                 JOIN bookmarks b ON bt.bookmark_id = b.id WHERE b.user_id = :user_id) as total_tags
+        """)
+        counts_res = db.execute(counts_query, {"user_id": user_id}).fetchone()
+        
+        # Query 2: Top Tags with Occurrences (using aggregates and joins)
+        top_tags_query = text("""
+            SELECT t.name, COUNT(bt.bookmark_id) as count 
+            FROM tags t
+            JOIN bookmark_tags bt ON t.id = bt.tag_id
+            JOIN bookmarks b ON bt.bookmark_id = b.id
+            WHERE b.user_id = :user_id
+            GROUP BY t.name
+            ORDER BY count DESC
+            LIMIT 5
+        """)
+        top_tags_res = db.execute(top_tags_query, {"user_id": user_id}).fetchall()
+        top_tags = [{"name": row[0], "count": row[1]} for row in top_tags_res]
+
+        # Query 3: Bookmarks Per Month (using SQLite date parsing functions)
+        monthly_query = text("""
+            SELECT strftime('%Y-%m', created_at) as month, COUNT(*) as count
+            FROM bookmarks
+            WHERE user_id = :user_id
+            GROUP BY month
+            ORDER BY month DESC
+        """)
+        monthly_res = db.execute(monthly_query, {"user_id": user_id}).fetchall()
+        bookmarks_per_month = [{"month": row[0], "count": row[1]} for row in monthly_res]
+
+        return {
+            "total_bookmarks": counts_res[0] or 0,
+            "total_tags": counts_res[1] or 0,
+            "top_tags": top_tags,
+            "bookmarks_per_month": bookmarks_per_month
+        }        

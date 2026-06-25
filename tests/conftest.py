@@ -10,6 +10,7 @@ from app.main import app
 
 # Explicitly load model definitions to populate Base.metadata
 from app.models.auth import User
+from app.schemas.auth import UserRegister, TokenResponse, UserLogin 
 from app.models.bookmarks import Bookmark, Tag, bookmark_tags
 
 # Use a concrete local file for the test runtime execution to prevent connection drops

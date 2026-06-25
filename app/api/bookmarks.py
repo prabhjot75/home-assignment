@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -10,6 +10,11 @@ from app.schemas.bookmarks import BookmarkCreate, BookmarkResponse, PaginatedBoo
 from app.services.bookmarks import BookmarkService
 
 router = APIRouter(prefix="/api/bookmarks", tags=["Bookmarks"])
+
+
+@router.get("/stats", status_code=status.HTTP_200_OK, summary="Get raw SQL bookmark statistics")
+def get_stats(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return BookmarkService.get_raw_stats(db, user_id=current_user.id)
 
 @router.post("", response_model=BookmarkResponse, 
             status_code=status.HTTP_201_CREATED,
@@ -26,22 +31,22 @@ def create_bookmark(obj_in: BookmarkCreate, current_user: User = Depends(get_cur
 def list_bookmarks(
         tag: Optional[str] = Query(None),
         q: Optional[str] = Query(None),
-        from_date: Optional[datetime] = Query(None),
-        to_date: Optional[datetime] = Query(None),
-        limit: int = Query(20, ge=1, le=100),
+        from_date: date = Query(None, description="Filter items created on or after this ISO date (YYYY-MM-DD)"),
+        to_date: date = Query(None, description="Filter items created on or before this ISO date (YYYY-MM-DD)"),
+        limit: int = Query(10, ge=1, le=100),
         offset: int = Query(0, ge=0),
-        current_user: User = Depends(get_current_user),
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
     ):
     total, items = BookmarkService.get_filtered(
         db, current_user.id, tag, q, from_date, to_date, limit, offset
     )
     return {"total": total, "limit": limit, "offset": offset, "items": items}
 
-@router.get("/stats",
+@router.get("/raw_metrics",
             response_model=StatisticsResponse,
             status_code=status.HTTP_200_OK,
-            summary="Retrieve user's bookmark statistics",
+            summary="Retrieve user's raw metrics using raw SQL",
             response_description="Returns total counts and average metrics based on stored bookmarks.")
 def get_statistics(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return BookmarkService.get_metrics_raw_sql(db, current_user.id)

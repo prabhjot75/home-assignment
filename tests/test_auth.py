@@ -25,8 +25,9 @@ def test_user_login_happy_path(client):
     client.post("/api/auth/register", json=payload)
     
     # Form-encoded body mapping email parameter directly onto OAuth2 username field
-    login_data = {"username": "login@test.com", "password": "securepassword123"}
-    response = client.post("/api/auth/login", data=login_data)
+    login_data = {"email": "login@test.com", "password": "securepassword123"}
+    response = client.post("/api/auth/login", json=login_data)
+    print(response.text)    
     assert response.status_code == 200
     assert "token" in response.json()
 

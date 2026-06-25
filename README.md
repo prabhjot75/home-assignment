@@ -1,7 +1,10 @@
-# Refer to docs folder for more information on the requirements
+# Personal Bookmarks Manager RESTful API
 
-# Architecture - 
-#    Seperation of concern principle is followed, for a modular, domain-agnostic layered architecture
+A structured, layered backend service engineered with FastAPI and SQLite designed to safely catalog, tag, search, and manage web assets across isolated user boundaries.
+
+## Architecture Highlights
+- **Layered Design**: Clean separation between routing entrypoints (`app/api`), service transaction engines (`app/services`), data persistence validation (`app/schemas`), and ORM records (`app/models`).
+- **Raw SQL Execution**: High-performance data compilation using direct database aggregates (`GROUP BY`, date formatting, and analytical joins) to optimize metric calculations without ORM overhead.
 
 ####
 # Instructions
@@ -15,40 +18,33 @@ delete all .pytest_cache, _pycache_ folders, if the code is modified after execu
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run the server
-uvicorn app.main:app --reload --host 127.0.0.1  --port 9500
-
-# 3. Testing
+# 2. Testing
 python -m pytest -v or pytest -v
 
-# 4. Testing the swagger UI
+# 3. Launch Application Engine with Swagger UI
 python run.py --> this will start the server on http://localhost:9500/api/docs
 
-# 5. Seed the database (Optional)
+# ############ Seed Optional ########################
+# 4. Seed the database 
 python seed.py
-
-# 6. Testing Seeded database (Optional)
+# 5. Testing Seeded database 
 python -m pytest tests/test_seed.py -v
-
-# 7. Clear Seeded data (Optional)
+# 6. Clear Seeded data 
 python clear_seed.py
+# ############ Seed Optional Ends ########################
 
 # ############ DOCKER Optional ########################
 # This is un-verified
 
-
-# 8. Docker Setup
+# 7. Docker Setup
 docker build --target test-runner -t bookmarks-test-suite .
-
-# 9. Up the Environment Locally
+# 8. Up the Environment Locally
 docker compose up --build -d
-
-# 9.1 URL to test swagger UI
+# 9. URL to test swagger UI
 http://localhost:9500/api/docs
-
 # 10. Check logs
 docker compose logs -f
-
 # 11. Teardown the Environment Locally
 docker compose down
-# ############ DOCKER Optional ########################
+
+# ############ DOCKER Optional Ends ########################

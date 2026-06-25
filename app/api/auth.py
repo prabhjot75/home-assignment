@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.auth import User
-from app.schemas.auth import UserRegister, TokenResponse
+from app.schemas.auth import UserRegister, TokenResponse, UserLogin
 from app.services.auth import AuthService
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -35,12 +35,19 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
 
 @router.post("/login", 
             response_model=TokenResponse,
+            status_code=status.HTTP_200_OK,
             summary="Authenticate a user and retrieve a token",
             response_description="Credentials verified and new JWT token returned.")
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not AuthService.verify_password(form_data.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
+def login(login_in: UserLogin, db: Session = Depends(get_db)):
+    # Safely look up by login_in.email from JSON structure
+    user = db.query(User).filter(User.email == login_in.email).first()
+    print(user)
+    print(login_in)
+    if not user or not AuthService.verify_password(login_in.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password"
+        )
         
     token = AuthService.create_access_token(subject=user.id)
     return {"user": user, "token": token}

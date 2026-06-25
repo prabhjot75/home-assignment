@@ -20,3 +20,7 @@ class UserResponse(BaseModel):
 class TokenResponse(BaseModel):
     user: UserResponse
     token: str  # <--- Must be exactly 'token' to match user['token'] in tests
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str    

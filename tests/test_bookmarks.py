@@ -113,3 +113,24 @@ def test_delete_bookmark_lifecycle(client):
 
     assert client.delete(f"/api/bookmarks/{bm_id}", headers=headers).status_code == 204
     assert client.get(f"/api/bookmarks/{bm_id}", headers=headers).status_code == 404
+
+def test_raw_sql_stats_endpoint(client):
+    """Test: Strictly confirms the execution and data layout of the raw SQL aggregates stats endpoint."""
+    user_res = client.post("/api/auth/register", json={"username": "stat_user", "email": "stats@test.com", "password": "securepassword123"})
+    headers = {"Authorization": f"Bearer {user_res.json()['token']}"}
+
+    # Populate multiple bookmarks with overlapping tags
+    client.post("/api/bookmarks", json={"url": "https://a.com", "title": "A", "tags": ["sql", "api"]}, headers=headers)
+    client.post("/api/bookmarks", json={"url": "https://b.com", "title": "B", "tags": ["sql"]}, headers=headers)
+
+    response = client.get("/api/bookmarks/stats", headers=headers)
+    assert response.status_code == 200
+    
+    data = response.json()
+    assert data["total_bookmarks"] == 2
+    assert data["total_tags"] == 2
+    assert len(data["top_tags"]) >= 1
+    assert data["top_tags"][0]["name"] == "sql"
+    assert data["top_tags"][0]["count"] == 2
+    assert "bookmarks_per_month" in data
+    assert len(data["bookmarks_per_month"]) == 1    
